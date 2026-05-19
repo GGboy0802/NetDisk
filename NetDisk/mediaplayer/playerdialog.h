@@ -36,6 +36,8 @@ private slots:
     void slot_getTotalTime(qint64 uSec);
     void slot_TimerTimeOut();
 
+    void on_cb_speed_currentIndexChanged(int index);
+
     //事件过滤器
     bool eventFilter(QObject* pbj,QEvent *event);
 private:

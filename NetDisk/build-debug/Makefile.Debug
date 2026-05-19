@@ -551,6 +551,10 @@ debug/moc_videoplayer.cpp: ../mediaplayer/videoplayer.h \
 		../mediaplayer/ffmpeg-4.2.2/include/libavdevice/version.h \
 		../mediaplayer/ffmpeg-4.2.2/include/libavutil/opt.h \
 		../mediaplayer/ffmpeg-4.2.2/include/libavutil/time.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/avfilter.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/version.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/buffersrc.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/buffersink.h \
 		debug/moc_predefs.h \
 		C:/Qt/Qt5.12.11/5.12.11/mingw73_32/bin/moc.exe
 	C:\Qt\Qt5.12.11\5.12.11\mingw73_32\bin\moc.exe $(DEFINES) --include D:/AICode/NB/NetDisk/NetDisk/build-debug/debug/moc_predefs.h -IC:/Qt/Qt5.12.11/5.12.11/mingw73_32/mkspecs/win32-g++ -ID:/AICode/NB/NetDisk/NetDisk -ID:/AICode/NB/NetDisk/NetDisk/netapi/net -ID:/AICode/NB/NetDisk/NetDisk/netapi/mediator -ID:/AICode/NB/NetDisk/NetDisk/netapi -ID:/AICode/NB/NetDisk/NetDisk/md5 -ID:/AICode/NB/NetDisk/NetDisk/sqlapi -ID:/AICode/NB/NetDisk/NetDisk/mediaplayer/ffmpeg-4.2.2/include -ID:/AICode/NB/NetDisk/NetDisk/mediaplayer/SDL2-2.0.10/include -ID:/AICode/NB/NetDisk/NetDisk/mediaplayer/opengl -ID:/AICode/NB/NetDisk/NetDisk/mediaplayer -IC:/Qt/Qt5.12.11/5.12.11/mingw73_32/include -IC:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtOpenGL -IC:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtWidgets -IC:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtGui -IC:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtANGLE -IC:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtNetwork -IC:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtSql -IC:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtCore -I. -IC:/Qt/Qt5.12.11/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include/c++ -IC:/Qt/Qt5.12.11/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include/c++/i686-w64-mingw32 -IC:/Qt/Qt5.12.11/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include/c++/backward -IC:/Qt/Qt5.12.11/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include -IC:/Qt/Qt5.12.11/Tools/mingw730_32/lib/gcc/i686-w64-mingw32/7.3.0/include-fixed -IC:/Qt/Qt5.12.11/Tools/mingw730_32/i686-w64-mingw32/include ..\mediaplayer\videoplayer.h -o debug\moc_videoplayer.cpp
@@ -743,6 +747,10 @@ debug/moc_playerdialog.cpp: ../mediaplayer/playerdialog.h \
 		../mediaplayer/ffmpeg-4.2.2/include/libavdevice/version.h \
 		../mediaplayer/ffmpeg-4.2.2/include/libavutil/opt.h \
 		../mediaplayer/ffmpeg-4.2.2/include/libavutil/time.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/avfilter.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/version.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/buffersrc.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/buffersink.h \
 		C:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtCore/QTimer \
 		C:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtCore/qtimer.h \
 		C:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtCore/qbasictimer.h \
@@ -990,6 +998,10 @@ debug/moc_ckernel.cpp: ../ckernel.h \
 		../mediaplayer/ffmpeg-4.2.2/include/libavdevice/version.h \
 		../mediaplayer/ffmpeg-4.2.2/include/libavutil/opt.h \
 		../mediaplayer/ffmpeg-4.2.2/include/libavutil/time.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/avfilter.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/version.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/buffersrc.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/buffersink.h \
 		C:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtCore/QTimer \
 		C:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtCore/qtimer.h \
 		C:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtCore/qbasictimer.h \
@@ -2155,6 +2167,10 @@ debug/videoplayer.o: ../mediaplayer/videoplayer.cpp ../mediaplayer/videoplayer.h
 		../mediaplayer/ffmpeg-4.2.2/include/libavdevice/version.h \
 		../mediaplayer/ffmpeg-4.2.2/include/libavutil/opt.h \
 		../mediaplayer/ffmpeg-4.2.2/include/libavutil/time.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/avfilter.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/version.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/buffersrc.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/buffersink.h \
 		C:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtCore/QDebug \
 		C:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtCore/qdebug.h \
 		C:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtCore/qhash.h \
@@ -2435,6 +2451,10 @@ debug/playerdialog.o: ../mediaplayer/playerdialog.cpp ../mediaplayer/playerdialo
 		../mediaplayer/ffmpeg-4.2.2/include/libavdevice/version.h \
 		../mediaplayer/ffmpeg-4.2.2/include/libavutil/opt.h \
 		../mediaplayer/ffmpeg-4.2.2/include/libavutil/time.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/avfilter.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/version.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/buffersrc.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/buffersink.h \
 		C:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtCore/QTimer \
 		C:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtCore/qtimer.h \
 		C:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtCore/qbasictimer.h \
@@ -2689,6 +2709,10 @@ debug/ckernel.o: ../ckernel.cpp ../ckernel.h \
 		../mediaplayer/ffmpeg-4.2.2/include/libavdevice/version.h \
 		../mediaplayer/ffmpeg-4.2.2/include/libavutil/opt.h \
 		../mediaplayer/ffmpeg-4.2.2/include/libavutil/time.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/avfilter.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/version.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/buffersrc.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/buffersink.h \
 		C:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtCore/QTimer \
 		C:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtCore/qtimer.h \
 		C:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtCore/qbasictimer.h \
@@ -3061,6 +3085,10 @@ debug/main.o: ../main.cpp ../ckernel.h \
 		../mediaplayer/ffmpeg-4.2.2/include/libavdevice/version.h \
 		../mediaplayer/ffmpeg-4.2.2/include/libavutil/opt.h \
 		../mediaplayer/ffmpeg-4.2.2/include/libavutil/time.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/avfilter.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/version.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/buffersrc.h \
+		../mediaplayer/ffmpeg-4.2.2/include/libavfilter/buffersink.h \
 		C:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtCore/QTimer \
 		C:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtCore/qtimer.h \
 		C:/Qt/Qt5.12.11/5.12.11/mingw73_32/include/QtCore/qbasictimer.h \

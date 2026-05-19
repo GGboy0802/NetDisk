@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1024</width>
+    <height>768</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>400</width>
+    <height>300</height>
+   </size>
   </property>
   <property name="font">
    <font>
@@ -17,118 +23,189 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>PlayerDialog</string>
+   <string>视频播放器</string>
   </property>
-  <widget class="QWidget" name="wdg_content" native="true">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>801</width>
-     <height>521</height>
-    </rect>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <property name="spacing">
+    <number>0</number>
    </property>
-   <property name="styleSheet">
-    <string notr="true">background-color: rgb(0, 0, 0);</string>
+   <property name="leftMargin">
+    <number>0</number>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <widget class="MyOpenGLWidget" name="wdg_show" native="true"/>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QSlider" name="slider_progress">
-   <property name="geometry">
-    <rect>
-     <x>80</x>
-     <y>530</y>
-     <width>641</width>
-     <height>16</height>
-    </rect>
+   <property name="topMargin">
+    <number>0</number>
    </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
+   <property name="rightMargin">
+    <number>0</number>
    </property>
-  </widget>
-  <widget class="QLabel" name="lb_curTime">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>530</y>
-     <width>61</width>
-     <height>16</height>
-    </rect>
+   <property name="bottomMargin">
+    <number>0</number>
    </property>
-   <property name="text">
-    <string>00:00:00</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="lb_totalTime">
-   <property name="geometry">
-    <rect>
-     <x>730</x>
-     <y>530</y>
-     <width>61</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>00:03:00</string>
-   </property>
-  </widget>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>559</y>
-     <width>781</width>
-     <height>30</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <item>
-     <widget class="QPushButton" name="pb_start">
-      <property name="text">
-       <string>打开</string>
+   <item>
+    <widget class="QWidget" name="wdg_content" native="true">
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(0, 0, 0);</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="leftMargin">
+       <number>0</number>
       </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="pb_resume">
-      <property name="text">
-       <string>播放/恢复</string>
+      <property name="topMargin">
+       <number>0</number>
       </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="pb_pause">
-      <property name="text">
-       <string>暂停</string>
+      <property name="rightMargin">
+       <number>0</number>
       </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="pb_stop">
-      <property name="text">
-       <string>停止</string>
+      <property name="bottomMargin">
+       <number>0</number>
       </property>
-     </widget>
-    </item>
-    <item>
-     <spacer name="horizontalSpacer">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>338</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-   </layout>
-  </widget>
+      <item>
+       <widget class="MyOpenGLWidget" name="wdg_show" native="true"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="progressLayout">
+     <property name="leftMargin">
+      <number>10</number>
+     </property>
+     <property name="topMargin">
+      <number>2</number>
+     </property>
+     <property name="rightMargin">
+      <number>10</number>
+     </property>
+     <property name="bottomMargin">
+      <number>2</number>
+     </property>
+     <item>
+      <widget class="QLabel" name="lb_curTime">
+       <property name="text">
+        <string>00:00:00</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSlider" name="slider_progress">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="lb_totalTime">
+       <property name="text">
+        <string>00:00:00</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="controlLayout">
+     <property name="leftMargin">
+      <number>10</number>
+     </property>
+     <property name="topMargin">
+      <number>2</number>
+     </property>
+     <property name="rightMargin">
+      <number>10</number>
+     </property>
+     <property name="bottomMargin">
+      <number>4</number>
+     </property>
+     <item>
+      <widget class="QPushButton" name="pb_start">
+       <property name="text">
+        <string>打开</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pb_resume">
+       <property name="text">
+        <string>播放/恢复</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pb_pause">
+       <property name="text">
+        <string>暂停</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pb_stop">
+       <property name="text">
+        <string>停止</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="cb_speed">
+       <property name="minimumSize">
+        <size>
+         <width>70</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="currentIndex">
+        <number>2</number>
+       </property>
+       <item>
+        <property name="text">
+         <string>0.5x</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>0.75x</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>1.0x</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>1.25x</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>1.5x</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>2.0x</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+  </layout>
  </widget>
  <customwidgets>
   <customwidget>

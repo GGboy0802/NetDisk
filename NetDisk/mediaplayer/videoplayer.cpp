@@ -1,6 +1,7 @@
 #include "videoplayer.h"
 #include<QDebug>
 #include"PacketQueue.h"
+#include <cinttypes>
 
 #define AVCODEC_MAX_AUDIO_FRAME_SIZE 192000 //1 second of 48khz 32bit audio
 #define SDL_AUDIO_BUFFER_SIZE 1024 //
@@ -14,6 +15,9 @@ void audio_callback(void *userdata, Uint8 *stream, int len);
 int audio_decode_frame(VideoState *is, uint8_t *audio_buf, int buf_size);
 //找 auto_stream
 int find_stream_index(AVFormatContext *pformat_ctx, int *video_stream, int *audio_stream);
+//音频滤镜初始化/销毁
+int init_audio_filters(VideoState *is);
+void deinit_audio_filters(VideoState *is);
 
 
 #define FLUSH_DATA "FLUSH"
@@ -130,6 +134,9 @@ Uint32 timer_callback(Uint32 interval, void *param)
     av_free(pFrame);
     av_free(pFrameRGB);
     av_free(out_buffer_rgb);
+    // 无音频时倍速：返回间隔需除以播放速率
+    if (is->playback_rate > 0 && is->base_frame_interval_ms > 0)
+        return (Uint32)(is->base_frame_interval_ms / is->playback_rate);
     return interval;
 }
 
@@ -303,12 +310,53 @@ void VideoPlayer::stop(bool isWait)//阻塞标志
         SDL_UnlockAudio();
         m_videoState.audioID = 0;
     }
+    // 清理滤镜资源
+    deinit_audio_filters(&m_videoState);
     m_playerState = PlayerState::Stop;
     Q_EMIT SIG_PlayerStateChanged(PlayerState::Stop);
 }
 PlayerState VideoPlayer::playerState() const
 {
     return m_playerState;
+}
+
+//设置播放速率
+void VideoPlayer::setPlaybackRate(double rate)
+{
+    if (rate < 0.5 || rate > 2.0) return;
+    if (m_videoState.playback_rate == rate) return;
+
+    // 在SDL音频锁保护下切换速率和重建滤镜
+    if (m_videoState.audioID != 0)
+        SDL_LockAudio();
+
+    m_videoState.playback_rate = rate;
+
+    // 如果有音频流，重建滤镜图
+    if (m_videoState.audioStream != -1 && m_videoState.pAudioCodecCtx) {
+        if (init_audio_filters(&m_videoState) < 0) {
+            qDebug() << "Failed to rebuild audio filters for rate" << rate;
+            m_videoState.playback_rate = 1.0;
+        }
+    }
+
+    if (m_videoState.audioID != 0)
+        SDL_UnlockAudio();
+
+    // 无音频流时需要重设定时器间隔
+    if (m_videoState.audioStream == -1 && m_videoState.timer_id) {
+        SDL_RemoveTimer(m_videoState.timer_id);
+        double adjusted_interval = m_videoState.base_frame_interval_ms / rate;
+        m_videoState.timer_id = SDL_AddTimer((Uint32)adjusted_interval, timer_callback, &m_videoState);
+    }
+
+    Q_EMIT SIG_PlaybackRateChanged(rate);
+}
+
+//获取播放速率
+double VideoPlayer::playbackRate() const
+{
+    return m_videoState.playback_rate;
 }
 
 #define MAX_AUDIO_SIZE (1024*16*25*10)//音频阈值
@@ -467,8 +515,11 @@ void VideoPlayer::run()
         }else{
             double fps = av_q2d(m_videoState.video_st->r_frame_rate);
             double pts_diff = 1/ fps ;
-            //获取画面的间隔时间
-            SDL_TimerID timer_id = SDL_AddTimer( pts_diff*1000, timer_callback, &m_videoState);
+            //记录原始帧间隔(ms)
+            m_videoState.base_frame_interval_ms = pts_diff * 1000;
+            //获取画面的间隔时间，考虑倍速
+            double adjusted_interval = pts_diff * 1000 / m_videoState.playback_rate;
+            SDL_TimerID timer_id = SDL_AddTimer( adjusted_interval, timer_callback, &m_videoState);
             m_videoState.timer_id=timer_id;
             if (timer_id == 0) {
                 fprintf(stderr, "SDL_AddTimer Error: %s\n", SDL_GetError());
@@ -549,6 +600,11 @@ void VideoPlayer::run()
         //初始化队列
         packet_queue_init(m_videoState.audioq);
         m_videoState.audioFrame = av_frame_alloc();
+        // 初始化音频滤镜图（atempo）
+        if (init_audio_filters(&m_videoState) < 0) {
+            qDebug() << "Failed to init audio filters, playback rate will be 1.0";
+            m_videoState.playback_rate = 1.0;
+        }
         SDL_UnlockAudio();
         // SDL 播放声音 0 播放
         SDL_PauseAudioDevice(m_videoState.audioID,0);
@@ -850,23 +906,66 @@ int audio_decode_frame(VideoState *is, uint8_t *audio_buf, int buf_size)
             }
             if( got_picture )
             {
-                swr_ctx = swr_alloc_set_opts(NULL, wanted_frame.channel_layout,
-
-                                             (AVSampleFormat)wanted_frame.format,wanted_frame.sample_rate,
-
-                                             audioFrame->channel_layout,(AVSampleFormat)audioFrame->format,
-                                             audioFrame->sample_rate, 0, NULL);
-                //初始化
-                if (swr_ctx == NULL || swr_init(swr_ctx) < 0)
+                // 如果滤镜图已初始化且倍速不为1.0，则通过滤镜处理
+                if (is->filter_inited && is->playback_rate != 1.0)
                 {
-                    printf("swr_init error\n");
-                    break;
+                    // 推入滤镜源
+                    if (av_buffersrc_add_frame(is->src_filter_ctx, audioFrame) < 0) {
+                        break;
+                    }
+                    // 从滤镜汇拉取过滤后的帧
+                    AVFrame *filt_frame = av_frame_alloc();
+                    if (av_buffersink_get_frame(is->sink_filter_ctx, filt_frame) < 0) {
+                        av_frame_free(&filt_frame);
+                        // 滤镜可能还没输出帧，继续输入
+                        audio_pkt_size -= ret;
+                        continue;
+                    }
+                    // 重采样过滤后的帧
+                    swr_ctx = swr_alloc_set_opts(NULL, wanted_frame.channel_layout,
+                                                 (AVSampleFormat)wanted_frame.format, wanted_frame.sample_rate,
+                                                 filt_frame->channel_layout, (AVSampleFormat)filt_frame->format,
+                                                 filt_frame->sample_rate, 0, NULL);
+                    if (swr_ctx == NULL || swr_init(swr_ctx) < 0) {
+                        printf("swr_init error\n");
+                        av_frame_free(&filt_frame);
+                        break;
+                    }
+                    convert_len = swr_convert(swr_ctx, &audio_buf,
+                                              AVCODEC_MAX_AUDIO_FRAME_SIZE,
+                                              (const uint8_t **)filt_frame->data,
+                                              filt_frame->nb_samples);
+                    swr_free(&swr_ctx);
+                    // 更新 data_size 为过滤后的实际大小
+                    switch (is->out_frame.format) {
+                    case AV_SAMPLE_FMT_U8:
+                        data_size = filt_frame->nb_samples * is->out_frame.channels * 1;
+                        break;
+                    case AV_SAMPLE_FMT_S16:
+                    default:
+                        data_size = filt_frame->nb_samples * is->out_frame.channels * 2;
+                        break;
+                    }
+                    av_frame_free(&filt_frame);
                 }
-                convert_len = swr_convert(swr_ctx, &audio_buf,
-                                          AVCODEC_MAX_AUDIO_FRAME_SIZE,
-                                          (const uint8_t **)audioFrame->data,
-                                          audioFrame->nb_samples);
-                swr_free( &swr_ctx );
+                else
+                {
+                    // 原始流程：直接重采样
+                    swr_ctx = swr_alloc_set_opts(NULL, wanted_frame.channel_layout,
+                                                 (AVSampleFormat)wanted_frame.format, wanted_frame.sample_rate,
+                                                 audioFrame->channel_layout, (AVSampleFormat)audioFrame->format,
+                                                 audioFrame->sample_rate, 0, NULL);
+                    if (swr_ctx == NULL || swr_init(swr_ctx) < 0)
+                    {
+                        printf("swr_init error\n");
+                        break;
+                    }
+                    convert_len = swr_convert(swr_ctx, &audio_buf,
+                                              AVCODEC_MAX_AUDIO_FRAME_SIZE,
+                                              (const uint8_t **)audioFrame->data,
+                                              audioFrame->nb_samples);
+                    swr_free( &swr_ctx );
+                }
             }
             audio_pkt_size -= ret;
             if (audioFrame->nb_samples <= 0)
@@ -878,6 +977,99 @@ int audio_decode_frame(VideoState *is, uint8_t *audio_buf, int buf_size)
         }
         av_free_packet(&pkt); //新版考虑使用 av_packet_unref() 函数来代替
     }
+}
+
+//初始化音频滤镜图: abuffer → atempo → abuffersink
+int init_audio_filters(VideoState *is)
+{
+    int ret;
+    const AVFilter *abuffer = avfilter_get_by_name("abuffer");
+    const AVFilter *atempo  = avfilter_get_by_name("atempo");
+    const AVFilter *abuffersink = avfilter_get_by_name("abuffersink");
+
+    if (!abuffer || !atempo || !abuffersink) {
+        qDebug() << "Could not find required audio filters";
+        return -1;
+    }
+
+    // 销毁旧的滤镜图
+    deinit_audio_filters(is);
+
+    is->filter_graph = avfilter_graph_alloc();
+    if (!is->filter_graph) return -1;
+
+    // abuffer 源滤镜参数：匹配音频解码器输出格式
+    char args[512];
+    snprintf(args, sizeof(args),
+             "time_base=%d/%d:sample_rate=%d:sample_fmt=%s:channel_layout=0x%llx",
+             is->audio_st->time_base.num, is->audio_st->time_base.den,
+             is->pAudioCodecCtx->sample_rate,
+             av_get_sample_fmt_name(is->pAudioCodecCtx->sample_fmt),
+             (unsigned long long)av_get_default_channel_layout(is->pAudioCodecCtx->channels));
+
+    ret = avfilter_graph_create_filter(&is->src_filter_ctx, abuffer, "src",
+                                       args, NULL, is->filter_graph);
+    if (ret < 0) {
+        qDebug() << "Cannot create abuffer filter";
+        deinit_audio_filters(is);
+        return -1;
+    }
+
+    // atempo 滤镜参数：播放速率
+    char tempo_args[32];
+    snprintf(tempo_args, sizeof(tempo_args), "%f", is->playback_rate);
+
+    AVFilterContext *atempo_ctx;
+    ret = avfilter_graph_create_filter(&atempo_ctx, atempo, "atempo",
+                                       tempo_args, NULL, is->filter_graph);
+    if (ret < 0) {
+        qDebug() << "Cannot create atempo filter";
+        deinit_audio_filters(is);
+        return -1;
+    }
+
+    // abuffersink 汇滤镜
+    ret = avfilter_graph_create_filter(&is->sink_filter_ctx, abuffersink, "sink",
+                                       NULL, NULL, is->filter_graph);
+    if (ret < 0) {
+        qDebug() << "Cannot create abuffersink filter";
+        deinit_audio_filters(is);
+        return -1;
+    }
+
+    // 连接滤镜: src → atempo → sink
+    ret = avfilter_link(is->src_filter_ctx, 0, atempo_ctx, 0);
+    if (ret < 0) {
+        deinit_audio_filters(is);
+        return -1;
+    }
+    ret = avfilter_link(atempo_ctx, 0, is->sink_filter_ctx, 0);
+    if (ret < 0) {
+        deinit_audio_filters(is);
+        return -1;
+    }
+
+    // 配置滤镜图
+    ret = avfilter_graph_config(is->filter_graph, NULL);
+    if (ret < 0) {
+        qDebug() << "Cannot config filter graph";
+        deinit_audio_filters(is);
+        return -1;
+    }
+
+    is->filter_inited = true;
+    return 0;
+}
+
+//销毁音频滤镜图
+void deinit_audio_filters(VideoState *is)
+{
+    if (is->filter_graph) {
+        avfilter_graph_free(&is->filter_graph);
+    }
+    is->src_filter_ctx = nullptr;
+    is->sink_filter_ctx = nullptr;
+    is->filter_inited = false;
 }
 
 //查找数据流函数

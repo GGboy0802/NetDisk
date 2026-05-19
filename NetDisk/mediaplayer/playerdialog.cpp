@@ -8,6 +8,13 @@ PlayerDialog::PlayerDialog(QWidget *parent)
     , ui(new Ui::PlayerDialog)
 {
     ui->setupUi(this);
+
+    // 设置主布局 stretch 因子，保持原始比例 视频87% : 进度3% : 按钮5%
+    // 原始 800x600: 视频521px, 进度16px, 按钮30px → stretch 521:16:30
+    ui->mainLayout->setStretch(0, 521);  // wdg_content 视频区
+    ui->mainLayout->setStretch(1, 16);   // 进度条行
+    ui->mainLayout->setStretch(2, 30);   // 按钮行
+
     m_player = new VideoPlayer;
     connect(m_player,SIGNAL(SIG_getOneImage(QImage)),this,SLOT(slot_setImage(QImage)));
 
@@ -125,6 +132,15 @@ void PlayerDialog::playFile(const QString& filePath)
     slot_PlayerStateChanged(PlayerState::Playing);
 }
 
+//倍速切换槽函数
+void PlayerDialog::on_cb_speed_currentIndexChanged(int index)
+{
+    double rates[] = {0.5, 0.75, 1.0, 1.25, 1.5, 2.0};
+    if (index >= 0 && index < 6) {
+        m_player->setPlaybackRate(rates[index]);
+    }
+}
+
 //播放状态切换槽函数
 void PlayerDialog::slot_PlayerStateChanged(int state)
 {
@@ -138,6 +154,7 @@ void PlayerDialog::slot_PlayerStateChanged(int state)
         ui->lb_curTime->setText("00:00:00");
         ui->pb_pause->hide();
         ui->pb_resume->show();
+        ui->cb_speed->setCurrentIndex(2); // 重置为1.0x
 //    {
 //        QImage img;
 //        img.fill( Qt::black);

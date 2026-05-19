@@ -14,6 +14,9 @@ extern "C"
 #include "libswscale/swscale.h"
 #include "libavdevice/avdevice.h"
 #include"libavutil/time.h"
+#include "libavfilter/avfilter.h"
+#include "libavfilter/buffersrc.h"
+#include "libavfilter/buffersink.h"
 #include "SDL.h"
 }
 enum PlayerState
@@ -66,9 +69,22 @@ typedef struct VideoState {
     int64_t start_time; //单位 微秒
 
     SDL_TimerID timer_id;
+    // 倍速播放相关
+    double playback_rate;                     // 播放速率，默认1.0
+    AVFilterGraph *filter_graph;              // 音频滤镜图
+    AVFilterContext *src_filter_ctx;           // abuffer 源滤镜
+    AVFilterContext *sink_filter_ctx;          // abuffersink 汇滤镜
+    bool filter_inited;                        // 滤镜图是否已初始化
+    double base_frame_interval_ms;             // 无音频时的原始帧间隔(ms)
     VideoState()
     {
         audio_clock = video_clock = start_time = 0;
+        playback_rate = 1.0;
+        filter_graph = nullptr;
+        src_filter_ctx = nullptr;
+        sink_filter_ctx = nullptr;
+        filter_inited = false;
+        base_frame_interval_ms = 0;
     }
     VideoPlayer* m_player;//用于调用函数
 } VideoState;
@@ -88,6 +104,7 @@ signals:
     void SIG_getOneImage(QImage img);
     void SIG_PlayerStateChanged(int flag);
     void SIG_TotalTime(qint64 uSec);
+    void SIG_PlaybackRateChanged(double rate);
 public:
     VideoPlayer();
     ~VideoPlayer(){
@@ -113,6 +130,10 @@ public:
     void setFileName(const QString &fileName);
     double getCurrentTime();
     int64_t getTotalTime();
+
+    ///倍速控制
+    void setPlaybackRate(double rate);         // 设置播放速率(0.5~2.0)
+    double playbackRate() const;               // 获取当前速率
 
 
     PlayerState playerState() const;
